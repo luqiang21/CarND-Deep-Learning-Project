@@ -44,6 +44,8 @@ def load_vgg(sess, vgg_path):
     return w1, keep, w3, w4, w7
 tests.test_load_vgg(load_vgg, tf)
 
+def tf_norm():
+    return tf.truncated_normal_initializer(stddev=0.01)
 
 def layers(vgg_layer3_out, vgg_layer4_out, vgg_layer7_out, num_classes):
     """
@@ -56,21 +58,24 @@ def layers(vgg_layer3_out, vgg_layer4_out, vgg_layer7_out, num_classes):
     """
 
     conv_1x1_7 = tf.layers.conv2d(vgg_layer7_out, num_classes, 1, strides=(1,1), \
-                        padding='same', kernel_regularizer=tf.contrib.layers.l2_regularizer(1e-3))
+                        padding='same', kernel_initializer=tf_norm(), \
+                        kernel_regularizer=tf.contrib.layers.l2_regularizer(1e-3))
     conv_1x1_4 = tf.layers.conv2d(vgg_layer4_out, num_classes, 1, strides=(1,1), \
-                        padding='same', kernel_regularizer=tf.contrib.layers.l2_regularizer(1e-3))
+                        padding='same', kernel_initializer=tf_norm(), \
+                        kernel_regularizer=tf.contrib.layers.l2_regularizer(1e-3))
     conv_1x1_3 = tf.layers.conv2d(vgg_layer3_out, num_classes, 1, strides=(1,1), \
-                        padding='same', kernel_regularizer=tf.contrib.layers.l2_regularizer(1e-3))
+                        padding='same', kernel_initializer=tf_norm(), \
+                        kernel_regularizer=tf.contrib.layers.l2_regularizer(1e-3))
     # deconvolution
-    output = tf.layers.conv2d_transpose(conv_1x1_7, num_classes, 4, 2, padding='same',
+    output = tf.layers.conv2d_transpose(conv_1x1_7, num_classes, 4, 2, padding='same',kernel_initializer=tf_norm(), \
                             kernel_regularizer=tf.contrib.layers.l2_regularizer(1e-3))
 
     output = tf.add(output, conv_1x1_4)
-    output = tf.layers.conv2d_transpose(output, num_classes, 4, 2, padding='same',
+    output = tf.layers.conv2d_transpose(output, num_classes, 4, 2, padding='same',kernel_initializer=tf_norm(), \
                             kernel_regularizer=tf.contrib.layers.l2_regularizer(1e-3))
 
     output = tf.add(output, conv_1x1_3)
-    output = tf.layers.conv2d_transpose(output, num_classes, 16, 8, padding='same',
+    output = tf.layers.conv2d_transpose(output, num_classes, 16, 8, padding='same',kernel_initializer=tf_norm(), \
                             kernel_regularizer=tf.contrib.layers.l2_regularizer(1e-3))
     tf.Print(output, [tf.shape(output)[:]])
     return output
@@ -131,7 +136,7 @@ tests.test_train_nn(train_nn)
 def run():
     epochs = 21
     learning_rate = 0.001
-    batch_size = 32
+    batch_size = 10
 
     num_classes = 2
     image_shape = (160, 576)
